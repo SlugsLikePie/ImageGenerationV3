@@ -10,7 +10,7 @@ public class ImageEditor {
     int editingImgWidth;
     int editingImgHeight;
 
-    ImageEditorMode mode = ImageEditorMode.RETURN_AND_REPLACE;
+    ImageEditorOutputMode mode = ImageEditorOutputMode.RETURN_AND_REPLACE;
 
     public ImageEditor() {
         editingImg = new EditableImage();
@@ -19,7 +19,7 @@ public class ImageEditor {
         editingImgHeight = editingBImg.getHeight();
     }
 
-    public ImageEditor(ImageEditorMode mode) {
+    public ImageEditor(ImageEditorOutputMode mode) {
         editingImg = new EditableImage();
         editingBImg = editingImg.getBufferedImage();
         editingImgWidth = editingBImg.getWidth();
@@ -34,7 +34,7 @@ public class ImageEditor {
         editingImgHeight = editingBImg.getHeight();
     }
 
-    public ImageEditor(EditableImage editingImage, ImageEditorMode mode) {
+    public ImageEditor(EditableImage editingImage, ImageEditorOutputMode mode) {
         this.editingImg = editingImage;
         editingBImg = editingImage.getBufferedImage();
         editingImgWidth = editingBImg.getWidth();
@@ -43,13 +43,23 @@ public class ImageEditor {
     }
 
     public EditableImage output(BufferedImage outputImg) {
-        if (mode == ImageEditorMode.RETURN_AND_REPLACE) {
+        if (mode == ImageEditorOutputMode.RETURN_AND_REPLACE) {
+            editingImg = new EditableImage(outputImg);
             editingBImg = outputImg;
         }
 
         return new EditableImage(outputImg);
     }
 
+    public EditableImage getEditableImage() {
+        return editingImg;
+    }
+
+    public BufferedImage getBufferedImage() {
+        return editingBImg;
+    }
+
+    // Used for rectangularBlur
     private int rectangularAreaColorAverage(int x, int y, int xRadius, int yRadius) {
         int rSum = 0;
         int gSum = 0;
@@ -97,4 +107,7 @@ public class ImageEditor {
         return output(outputImg);
     }
 
+    // public EditableImage adaptiveTriangularMosaic(int iterations, int xScale, int yScale) {
+
+    // }
 }

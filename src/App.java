@@ -1,9 +1,11 @@
 public class App {
     public static void main(String[] args) throws Exception {
         EditableImage img = new EditableImage("Background.jpg");
-        ImageEditor imgE = new ImageEditor(img);
+        ImageEditor imgE = new ImageEditor(img, ImageEditorOutputMode.RETURN_AND_REPLACE);
         
-        img = imgE.rectangularBlur(1, 1, 1);
+        imgE.rectangularBlur(1, 1, 1);
+
+        img = imgE.getEditableImage();
 
         img.writeFile();
     }
