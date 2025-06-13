@@ -4,7 +4,7 @@ import java.awt.Color;
 public class ImageEditor {
     EditableImage editingImg;
     BufferedImage editingBufferedImg;
-    ImageEditorMode mode = ImageEditorMode.RETURN_ONLY;
+    ImageEditorMode mode = ImageEditorMode.RETURN_AND_REPLACE;
 
     public ImageEditor() {
         editingImg = new EditableImage();
