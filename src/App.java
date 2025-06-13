@@ -3,6 +3,6 @@ public class App {
         EditableImage img = new EditableImage();
         ImageEditor imgE = new ImageEditor(img);
         
-        img = imgE.rectangularBlur();
+        // img = imgE.rectangularBlur();
     }
 }

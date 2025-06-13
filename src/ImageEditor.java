@@ -1,5 +1,5 @@
 import java.awt.image.BufferedImage;
-
+import java.awt.Color;
 
 public class ImageEditor {
     EditableImage editingImg;
@@ -28,7 +28,7 @@ public class ImageEditor {
         this.mode = mode;
     }
 
-    public EditableImage outputImg(BufferedImage outputImg) {
+    public EditableImage output(BufferedImage outputImg) {
         if (mode == ImageEditorMode.RETURN_AND_REPLACE) {
             editingImg = new EditableImage();
         }
@@ -36,16 +36,26 @@ public class ImageEditor {
         return new EditableImage(outputImg);
     }
 
-    public EditableImage rectangularBlur() {
+    // private int rectangularAreaColorAverage(int x, int y, int xSize, int ySize) {
+        
+    // }
+
+    public EditableImage rectangularBlur(int iterations, int xSize, int ySize) {
         BufferedImage outputImg = new BufferedImage(
             editingBufferedImg.getWidth(), 
             editingBufferedImg.getHeight(), 
             editingBufferedImg.getType()
         );
 
-        // Blurring code goes here
+        for (int i = 0; i < iterations; i++)
+        for (int x = 0; x < editingBufferedImg.getWidth(); x++)
+        for (int y = 0; y < editingBufferedImg.getHeight(); y++) {
+            outputImg.setRGB(
+                x, y, 1324
+            );
+        }
 
-        return outputImg(outputImg);
+        return output(outputImg);
     }
 
 }
