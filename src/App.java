@@ -4,6 +4,7 @@ public class App {
         ImageEditor imgE = new ImageEditor(img, ImageEditorOutputMode.RETURN_AND_REPLACE);
         
         imgE.rectangularBlur(1, 1, 1);
+        // imgE.replaceImageWithRandomNoise();
 
         img = imgE.getEditableImage();
 

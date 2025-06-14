@@ -59,7 +59,7 @@ public class ImageEditor {
         return editingBImg;
     }
 
-    // Used for rectangularBlur
+    // Used for rectangularBlur. Takes the average of the pixels in a rectangle around a pixel
     private int rectangularAreaColorAverage(int x, int y, int xRadius, int yRadius) {
         int rSum = 0;
         int gSum = 0;
@@ -71,7 +71,6 @@ public class ImageEditor {
         for (int yI = y - yRadius; yI <= y + yRadius; yI++) {
             if (xI >= 0 && xI < editingImgWidth && yI >= 0 && yI < editingImgHeight) {
                 int rgb = editingBImg.getRGB(xI, yI);
-                // System.out.println(rgb);
 
                 rSum += (rgb >> 16) & 0xFF;
                 gSum += (rgb >> 8) & 0xFF;
@@ -84,12 +83,13 @@ public class ImageEditor {
         return ((rSum / numPx) << 16) + ((gSum / numPx) << 8) + (bSum / numPx);
     }
 
+    // Simple unweighted blur based on the rectangle of pixels that surround a pixel
     public EditableImage rectangularBlur(int iterations, int xRadius, int yRadius) {
         Instant start = Instant.now();
         
         BufferedImage outputImg = new BufferedImage(
-            editingBImg.getWidth(), 
-            editingBImg.getHeight(), 
+            editingImgWidth, 
+            editingImgHeight, 
             editingBImg.getType()
         );
 
@@ -106,6 +106,50 @@ public class ImageEditor {
 
         return output(outputImg);
     }
+
+    // Fills an image with random noise // FIX
+    public EditableImage replaceImageWithRandomNoise() throws Exception {
+        Instant start = Instant.now();
+        
+        BufferedImage outputImg = new BufferedImage(
+            editingImgWidth, 
+            editingImgHeight, 
+            editingBImg.getType()
+        );
+
+        for (int x = 0; x < editingImgWidth; x++)
+        for (int y = 0; y < editingImgHeight; y++) {
+            editingBImg.setRGB(
+                x, y, new Color(
+                (int)(Math.random() * 256),
+                (int)(Math.random() * 256),
+                (int)(Math.random() * 256)
+                ).getRGB()
+            );
+        }
+
+        Instant end = Instant.now();
+        System.out.println("Noise replacement completed in " + Duration.between(start, end).toMillis() + " milliseconds");
+
+        return output(outputImg);
+    }
+
+    // Multiplies the color values in an image by random noise
+    // public void multiplyImageByRandomNoise(double iterations) throws Exception {
+    //     for (int i = 0; i < iterations; i++)
+    //     for (int x = 0; x < img.getWidth(); x++)
+    //     for (int y = 0; y < img.getHeight(); y++) {
+    //         Color o = new Color(img.getRGB(x, y));
+    //         img.setRGB(
+    //             x, y, new Color(
+    //             (int)(o.getRed() * (Math.random())),
+    //             (int)(o.getGreen() * (Math.random())),
+    //             (int)(o.getBlue() * (Math.random()))
+    //             ).getRGB()
+    //         );
+    //     }
+    //     writeFile();
+    // }
 
     // public EditableImage adaptiveTriangularMosaic(int iterations, int xScale, int yScale) {
 
