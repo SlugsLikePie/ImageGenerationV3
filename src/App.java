@@ -5,6 +5,7 @@ public class App {
         
         imgE.rectangularBlur(1, 1, 1);
         // imgE.replaceImageWithRandomNoise();
+        imgE.multiplyImageByRandomNoise(1);
 
         img = imgE.getEditableImage();
 

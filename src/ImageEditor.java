@@ -80,7 +80,7 @@ public class ImageEditor {
             }
         }
 
-        return ((rSum / numPx) << 16) + ((gSum / numPx) << 8) + (bSum / numPx);
+        return ((rSum / numPx) << 16) | ((gSum / numPx) << 8) | (bSum / numPx);
     }
 
     // Simple unweighted blur based on the rectangle of pixels that surround a pixel
@@ -107,7 +107,7 @@ public class ImageEditor {
         return output(outputImg);
     }
 
-    // Fills an image with random noise // FIX
+    // Fills an image with random noise, overwriting all previous data
     public EditableImage replaceImageWithRandomNoise() throws Exception {
         Instant start = Instant.now();
         
@@ -119,12 +119,8 @@ public class ImageEditor {
 
         for (int x = 0; x < editingImgWidth; x++)
         for (int y = 0; y < editingImgHeight; y++) {
-            editingBImg.setRGB(
-                x, y, new Color(
-                (int)(Math.random() * 256),
-                (int)(Math.random() * 256),
-                (int)(Math.random() * 256)
-                ).getRGB()
+            outputImg.setRGB(
+                x, y, (int) (Math.random() * 0x1000000)
             );
         }
 
@@ -135,21 +131,29 @@ public class ImageEditor {
     }
 
     // Multiplies the color values in an image by random noise
-    // public void multiplyImageByRandomNoise(double iterations) throws Exception {
-    //     for (int i = 0; i < iterations; i++)
-    //     for (int x = 0; x < img.getWidth(); x++)
-    //     for (int y = 0; y < img.getHeight(); y++) {
-    //         Color o = new Color(img.getRGB(x, y));
-    //         img.setRGB(
-    //             x, y, new Color(
-    //             (int)(o.getRed() * (Math.random())),
-    //             (int)(o.getGreen() * (Math.random())),
-    //             (int)(o.getBlue() * (Math.random()))
-    //             ).getRGB()
-    //         );
-    //     }
-    //     writeFile();
-    // }
+    public EditableImage multiplyImageByRandomNoise(double noiseWeight) throws Exception {
+        Instant start = Instant.now();
+        
+        BufferedImage outputImg = new BufferedImage(
+            editingImgWidth, 
+            editingImgHeight, 
+            editingBImg.getType()
+        );
+
+        for (int x = 0; x < editingImgWidth; x++)
+        for (int y = 0; y < editingImgHeight; y++) {
+            int rgb = editingBImg.getRGB(x, y);
+
+            outputImg.setRGB(
+                x, y, ((int) (((rgb >> 16) & 0xFF) * Math.random()) << 16) | ((int) (((rgb >> 8) & 0xFF) * Math.random()) << 8) | (int) ((rgb & 0xFF) * Math.random())
+            );
+        }
+
+        Instant end = Instant.now();
+        System.out.println("Noise overlay completed in " + Duration.between(start, end).toMillis() + " milliseconds");
+
+        return output(outputImg);
+    }
 
     // public EditableImage adaptiveTriangularMosaic(int iterations, int xScale, int yScale) {
 
