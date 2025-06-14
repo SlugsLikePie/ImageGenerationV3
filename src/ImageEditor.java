@@ -145,7 +145,9 @@ public class ImageEditor {
             int rgb = editingBImg.getRGB(x, y);
 
             outputImg.setRGB(
-                x, y, ((int) (((rgb >> 16) & 0xFF) * Math.random()) << 16) | ((int) (((rgb >> 8) & 0xFF) * Math.random()) << 8) | (int) ((rgb & 0xFF) * Math.random())
+                x, y, ((int) Math.clamp(((rgb >> 16) & 0xFF) * Math.random() / Math.random(), 0, 0xFF) << 16) | 
+                      ((int) Math.clamp(((rgb >> 8) & 0xFF) * Math.random() / Math.random(), 0, 0xFF) << 8) | 
+                      ((int) Math.clamp((rgb & 0xFF) * Math.random() / Math.random(), 0, 0xFF))
             );
         }
 
