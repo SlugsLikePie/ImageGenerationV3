@@ -2,6 +2,7 @@ import java.awt.image.BufferedImage;
 import java.time.Duration;
 import java.time.Instant;
 import java.awt.Color;
+import java.awt.Graphics2D;
 
 public class ImageEditor {
     EditableImage editingImg;
@@ -60,7 +61,7 @@ public class ImageEditor {
     }
 
     // Used for rectangularBlur. Takes the average of the pixels in a rectangle around a pixel
-    private int rectangularAreaColorAverage(int x, int y, int xRadius, int yRadius) {
+    private int rectangularAreaColorAverage(BufferedImage outputImage, int x, int y, int xRadius, int yRadius) {
         int rSum = 0;
         int gSum = 0;
         int bSum = 0;
@@ -70,7 +71,7 @@ public class ImageEditor {
         for (int xI = x - xRadius; xI <= x + xRadius; xI++)
         for (int yI = y - yRadius; yI <= y + yRadius; yI++) {
             if (xI >= 0 && xI < editingImgWidth && yI >= 0 && yI < editingImgHeight) {
-                int rgb = editingBImg.getRGB(xI, yI);
+                int rgb = outputImage.getRGB(xI, yI);
 
                 rSum += (rgb >> 16) & 0xFF;
                 gSum += (rgb >> 8) & 0xFF;
@@ -87,17 +88,13 @@ public class ImageEditor {
     public EditableImage rectangularBlur(int iterations, int xRadius, int yRadius) {
         Instant start = Instant.now();
         
-        BufferedImage outputImg = new BufferedImage(
-            editingImgWidth, 
-            editingImgHeight, 
-            editingBImg.getType()
-        );
+        BufferedImage outputImg = editingBImg;
 
         for (int i = 0; i < iterations; i++)
         for (int x = 0; x < editingBImg.getWidth(); x++)
         for (int y = 0; y < editingBImg.getHeight(); y++) {
             outputImg.setRGB(
-                x, y, rectangularAreaColorAverage(x, y, xRadius, yRadius)
+                x, y, rectangularAreaColorAverage(outputImg, x, y, xRadius, yRadius)
             );
         }
 
@@ -131,7 +128,7 @@ public class ImageEditor {
     }
 
     // Multiplies the color values in an image by random noise
-    public EditableImage multiplyImageByRandomNoise(double noiseWeight) throws Exception {
+    public EditableImage sumImageWithRandomNoise(double noiseWeight) throws Exception { // NEED TO IMPLEMENT WEIGHT
         Instant start = Instant.now();
         
         BufferedImage outputImg = new BufferedImage(
@@ -145,19 +142,55 @@ public class ImageEditor {
             int rgb = editingBImg.getRGB(x, y);
 
             outputImg.setRGB(
-                x, y, ((int) Math.clamp(((rgb >> 16) & 0xFF) * Math.random() / Math.random(), 0, 0xFF) << 16) | 
-                      ((int) Math.clamp(((rgb >> 8) & 0xFF) * Math.random() / Math.random(), 0, 0xFF) << 8) | 
-                      ((int) Math.clamp((rgb & 0xFF) * Math.random() / Math.random(), 0, 0xFF))
+                x, y, (int) (((Math.random() * 0x100 * noiseWeight) + (rgb >> 16 & 0xFF) * (1 - noiseWeight))) << 16 | 
+                      (int) (((Math.random() * 0x100 * noiseWeight) + (rgb >> 8 & 0xFF) * (1 - noiseWeight))) << 8 | 
+                      (int) ((Math.random() * 0x100 * noiseWeight) + (rgb & 0xFF) * (1 - noiseWeight))
             );
         }
 
         Instant end = Instant.now();
-        System.out.println("Noise overlay completed in " + Duration.between(start, end).toMillis() + " milliseconds");
+        System.out.println("Noise sum completed in " + Duration.between(start, end).toMillis() + " milliseconds");
 
         return output(outputImg);
     }
 
-    // public EditableImage adaptiveTriangularMosaic(int iterations, int xScale, int yScale) {
+    private int[] rectangularAreaFindLeastSimilar(BufferedImage editingBImage, int x, int y, int xScale, int yScale) {
+        int rgbO = editingBImage.getRGB(x, y);
+        int[] leastSimilarCoordinatesAndColor = {x, y, Integer.MIN_VALUE};
 
-    // }
+        for (int xI = x - xScale; xI <= x + xScale; xI++)
+        for (int yI = y - yScale; yI <= y + yScale; yI++) {
+            if (xI >= 0 && xI < editingImgWidth && yI >= 0 && yI < editingImgHeight) {
+                int rgbI = editingBImage.getRGB(xI, yI);
+                if (Math.abs(rgbO + rgbI) > leastSimilarCoordinatesAndColor[2]) {
+                    leastSimilarCoordinatesAndColor[0] = xI;
+                    leastSimilarCoordinatesAndColor[1] = yI;
+                    leastSimilarCoordinatesAndColor[2] = rgbI;
+                }
+            }
+        }
+
+        return leastSimilarCoordinatesAndColor;
+    }
+
+    public EditableImage adaptiveTriangularMosaic(int xScale, int yScale) {
+        Instant start = Instant.now();
+        
+        BufferedImage outputImg = editingBImg;
+        Graphics2D outputImgG2D = outputImg.createGraphics();
+
+        for (int x = 0; x < editingImgWidth; x++)
+        for (int y = 0; y < editingImgHeight; y++) {
+            int rgb = editingBImg.getRGB(x, y);
+            int[] leastSimilarCoordinatesAndColor = rectangularAreaFindLeastSimilar(editingBImg, x, y, xScale, yScale);
+
+            outputImgG2D.setColor(new Color(rgb));
+            outputImgG2D.drawLine(x, y, leastSimilarCoordinatesAndColor[0], leastSimilarCoordinatesAndColor[1]);
+        }
+
+        Instant end = Instant.now();
+        System.out.println("Adaptive triangular mosaic overlay completed in " + Duration.between(start, end).toMillis() + " milliseconds");
+
+        return output(outputImg);
+    }
 }

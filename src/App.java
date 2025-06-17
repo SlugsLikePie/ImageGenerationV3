@@ -3,9 +3,9 @@ public class App {
         EditableImage img = new EditableImage("Background.jpg");
         ImageEditor imgE = new ImageEditor(img, ImageEditorOutputMode.RETURN_AND_REPLACE);
         
-        // imgE.rectangularBlur(1, 1, 1);
-        // imgE.replaceImageWithRandomNoise();
-        imgE.multiplyImageByRandomNoise(10); // IMPLEMENT WEIGHT
+        // imgE.sumImageWithRandomNoise(0.1);
+        // imgE.rectangularBlur(5, 1, 1);
+        imgE.adaptiveTriangularMosaic(5, 5);
 
         img = imgE.getEditableImage();
 
