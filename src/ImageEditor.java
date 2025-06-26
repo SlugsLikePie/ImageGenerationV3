@@ -88,7 +88,7 @@ public class ImageEditor {
     public EditableImage rectangularBlur(int iterations, int xRadius, int yRadius) {
         Instant start = Instant.now();
         
-        BufferedImage outputImg = editingBImg;
+        BufferedImage outputImg = editingBImg; // PROBABLY CHANGE TO BufferedImage outputImg = editingImg.getBufferedImage(); // NEVERMIND, BUT IS STILL BROKEN BECAUSE OF THE WAY OBJECT ASSIGNMENTS WORK
 
         for (int i = 0; i < iterations; i++)
         for (int x = 0; x < editingBImg.getWidth(); x++)
@@ -156,13 +156,22 @@ public class ImageEditor {
 
     private int[] rectangularAreaFindLeastSimilar(BufferedImage editingBImage, int x, int y, int xScale, int yScale) {
         int rgbO = editingBImage.getRGB(x, y);
+        int rO = (rgbO >> 16) & 0xFF;
+        int gO = (rgbO >> 8) & 0xFF;
+        int bO = rgbO & 0xFF;
+
         int[] leastSimilarCoordinatesAndColor = {x, y, Integer.MIN_VALUE};
 
         for (int xI = x - xScale; xI <= x + xScale; xI++)
         for (int yI = y - yScale; yI <= y + yScale; yI++) {
-            if (xI >= 0 && xI < editingImgWidth && yI >= 0 && yI < editingImgHeight) {
+            if (xI >= 0 && xI < editingImgWidth && yI >= 0 && yI < editingImgHeight && xI != x && xI != y) {
                 int rgbI = editingBImage.getRGB(xI, yI);
-                if (Math.abs(rgbO + rgbI) > leastSimilarCoordinatesAndColor[2]) {
+                int rI = (rgbI >> 16) & 0xFF;
+                int gI = (rgbI >> 8) & 0xFF;
+                int bI = rgbI & 0xFF;
+
+                // if (Math.sqrt(Math.pow(rI - rO, 2) + Math.pow(gI - gO, 2) + Math.pow(bI - bO, 2)) > leastSimilarCoordinatesAndColor[2]) {
+                if (Math.random() * 5 > 2.5) {
                     leastSimilarCoordinatesAndColor[0] = xI;
                     leastSimilarCoordinatesAndColor[1] = yI;
                     leastSimilarCoordinatesAndColor[2] = rgbI;
@@ -176,12 +185,18 @@ public class ImageEditor {
     public EditableImage adaptiveTriangularMosaic(int xScale, int yScale) {
         Instant start = Instant.now();
         
-        BufferedImage outputImg = editingBImg;
+        BufferedImage outputImg = new BufferedImage(
+            editingImgWidth, 
+            editingImgHeight, 
+            editingBImg.getType()
+        );
+
         Graphics2D outputImgG2D = outputImg.createGraphics();
 
         for (int x = 0; x < editingImgWidth; x++)
         for (int y = 0; y < editingImgHeight; y++) {
             int rgb = editingBImg.getRGB(x, y);
+            
             int[] leastSimilarCoordinatesAndColor = rectangularAreaFindLeastSimilar(editingBImg, x, y, xScale, yScale);
 
             outputImgG2D.setColor(new Color(rgb));
